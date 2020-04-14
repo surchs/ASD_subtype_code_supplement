@@ -44,34 +44,6 @@ def t_test(data, pheno, group, case, control):
     return results
 
 
-def mann_whitney_test(data, pheno, group, case, control):
-    # We cannot assume that the index is reset or consecutive from 0,
-    # Let's instead get the precise position
-    case_idx = np.array([pheno.index.get_loc(idx) for idx in pheno.query(f'{group} == "{case}"').index.values])
-    control_idx = np.array([pheno.index.get_loc(idx) for idx in pheno.query(f'{group} == "{control}"').index.values])
-    contrast_name = f'Mann_Whitney_U of {group}: {case} vs {control}'
-
-    n_case = len(case_idx)
-    n_control = len(control_idx)
-    u_right, p = sp.stats.mannwhitneyu(data[case_idx], data[control_idx], alternative='two-sided')
-    median_case = np.median(data[case_idx])
-    median_control = np.median(data[control_idx])
-    u_left = n_case * n_control - u_right
-    u_min = np.min([u_left, u_right])
-    # Compute rank biserial correlation
-    r_b = 1 - (2 * u_min) / (n_case * n_control)
-    # Determine if cases > controls or reverse
-    case_gt_con = u_right > u_min
-    if not case_gt_con:
-        r_b = -r_b
-    results = {'U': u_min, 'p': p,
-               'rank_biserial_correlation': r_b,
-               'median_case': median_case,
-               'median_control': median_control,
-               'contrast': contrast_name}
-    return results
-
-
 def corr2_coeff(A, B):
     # Rowwise mean of input arrays & subtract from input arrays themeselves
     A_mA = A - A.mean(1)[:, None]
