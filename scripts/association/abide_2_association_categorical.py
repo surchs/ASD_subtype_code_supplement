@@ -37,10 +37,12 @@ def associate_categorical(group, case, control):
         roi_number = labels.iloc[seed_id]['roi']
         weight = np.load(weight_d / weight_t.format(roi_number))
         for sbt_id in range(weight.shape[1]):
-            results = asdfc.stats.mann_whitney_test(weight[:, sbt_id], pheno, group, case, control)
+            results = asdfc.stats.t_test(weight[:, sbt_id], pheno, group, case, control)
             results['seed_id'] = roi_number
             results['seed'] = seed_name
+            results['sd'] = np.std(weight[:, sbt_id])
             results['subtype'] = sbt_id+1
+            results['subtype_name'] = f'{seed_name}_{sbt_id+1}'
             res_list.append(results)
     table = pd.DataFrame(data=res_list)
     # Add FDR correction
